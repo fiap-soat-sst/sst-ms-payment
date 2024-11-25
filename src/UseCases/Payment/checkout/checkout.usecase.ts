@@ -1,7 +1,5 @@
 import { Either, isLeft, Left, Right } from '../../../@Shared/Either'
 import { PaymentStatus } from '../../../Entities/Enums/PaymentStatusEnum'
-import Order from '../../../Entities/Order'
-import { StatusEnum } from '../../../Entities/Enums/StatusEnum'
 import { Payment } from '../../../Entities/Payment'
 import IExternalPaymentGatewayRepository from '../../../Gateways/contracts/IExternalPaymentGatewayRepository'
 import IPaymentGatewayRepository from '../../../Gateways/contracts/IPaymentGatewayRepository'
@@ -19,8 +17,7 @@ export default class CheckoutUseCase {
         const payment = new Payment(
             'TempId',
             input.orderId,
-            PaymentStatus.INITIALIZED,
-            new Order('Jorginho', '1', StatusEnum.Received, new Date())
+            PaymentStatus.INITIALIZED
         )
 
         const paymentResult = await this.paymentRepository.checkout(payment)
@@ -31,7 +28,8 @@ export default class CheckoutUseCase {
 
         const qrCodeString =
             await this.externalPaymentRepository.generateQrCodePaymentString(
-                paymentResult.value
+                paymentResult.value,
+                input.total
             )
 
         if (isLeft(qrCodeString)) {
@@ -42,21 +40,11 @@ export default class CheckoutUseCase {
             return Left<Error>(new Error('Erro ao gerar ordem de pagamento'))
         }
 
-        const order = paymentResult.value.getOrder()
-        let items: any[] = []
-        let total = 0
-
-        if (order instanceof Order) {
-            items = order.getItems()
-            total = order.getTotalOrderValue()
-        }
-
         const outputPayment = {
             id: paymentResult.value.getId(),
             status: paymentResult.value.getStatus(),
-            total: total,
+            total: input.total,
             orderId: paymentResult.value.getOrderId(),
-            items: items.map((item) => item.toJSON()),
             qr_code_data: qrCodeString.value,
         }
 

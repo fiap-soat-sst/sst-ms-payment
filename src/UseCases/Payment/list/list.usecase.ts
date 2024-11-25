@@ -18,7 +18,6 @@ export default class ListUseCase {
             return {
                 id: result.getId(),
                 status: result.getStatus(),
-                order: result.getOrder(),
             }
         })
 

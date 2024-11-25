@@ -9,9 +9,10 @@ export default class ExternalPaymentGatewayRepository
     constructor(private readonly external: IExternalPaymentRepository) {}
 
     async generateQrCodePaymentString(
-        payment: Payment
+        payment: Payment,
+        total: number
     ): Promise<Either<Error, String>> {
-        return this.external.generateQrCodePaymentString(payment)
+        return this.external.generateQrCodePaymentString(payment, total)
     }
 
     async getPaymentStatusById(

@@ -15,6 +15,6 @@ app.use(
         swaggerOptions: { url: `${process.env.SWAGGER_URL}` },
     })
 )
-app.use('payment', paymentRoutes.buildRouter())
+app.use('/api/payment', paymentRoutes.buildRouter())
 
 export default app

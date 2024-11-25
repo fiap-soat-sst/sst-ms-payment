@@ -1,5 +1,3 @@
-import Order from './Order'
-
 export class Payment {
     private readonly externalReference: string
     private readonly notificationUrl: string
@@ -10,11 +8,9 @@ export class Payment {
     private orderId: string
     private value: number
     private expirationDate: string
-    private order: Order
     private paymentUrl: string
 
-    constructor(id: string, orderId: string, status: string, order: Order) {
-        this.order = order
+    constructor(id: string, orderId: string, status: string) {
         this.id = id
         this.status = status
         this.orderId = orderId
@@ -50,9 +46,6 @@ export class Payment {
     }
     getProducts(): any[] {
         return this.products
-    }
-    getOrder(): Order {
-        return this.order
     }
     setValue(value: number): void {
         this.value = value

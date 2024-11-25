@@ -34,8 +34,8 @@ export default class PaymentController {
     }
 
     async checkout(req: Request, res: Response): Promise<void> {
-        const { orderId } = req.body
-        const result = await this.checkoutUseCase.execute({ orderId })
+        const { orderId, total } = req.body
+        const result = await this.checkoutUseCase.execute({ orderId, total })
 
         if (isLeft(result)) {
             res.status(400).json(result.value.message)

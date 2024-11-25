@@ -2,7 +2,6 @@ import { isLeft, isRight, Left, Right } from '../../../src/@Shared/Either'
 import IPaymentGatewayRepository from '../../../src/Gateways/contracts/IPaymentGatewayRepository'
 import IExternalPaymentGatewayRepository from '../../../src/Gateways/contracts/IExternalPaymentGatewayRepository'
 import CheckoutUseCase from '../../../src/UseCases/Payment/checkout/checkout.usecase'
-import { InputCheckoutDTO } from '../../../src/UseCases/Payment/checkout/checkout.dto'
 import { createMock } from '../../utils/mock.util'
 import { randomUUID } from 'crypto'
 import { PaymentStatus } from '../../../src/Entities/Enums/PaymentStatusEnum'
@@ -30,7 +29,7 @@ describe('CheckoutUseCase', () => {
     })
 
     it('should return an error if payment checkout fails', async () => {
-        const input = createMockInputPayment(randomUUID())
+        const input = createMockInputPayment(randomUUID(), 22.5)
         mockPaymentRepository.checkout.mockResolvedValue(
             Left(new Error('Checkout failed'))
         )
@@ -42,8 +41,8 @@ describe('CheckoutUseCase', () => {
     })
 
     it('should return an error if QR code generation fails', async () => {
-        const input = createMockInputPayment(randomUUID())
-        const mockPayment = createMockPayment(PAYMENT_ID_1, TODAY)
+        const input = createMockInputPayment(randomUUID(), 22.5)
+        const mockPayment = createMockPayment(PAYMENT_ID_1)
         mockPaymentRepository.checkout.mockResolvedValue(Right(mockPayment))
         mockExternalPaymentRepository.generateQrCodePaymentString.mockResolvedValue(
             Left(new Error('QR code generation failed'))
@@ -62,8 +61,8 @@ describe('CheckoutUseCase', () => {
     })
 
     it('should return payment details with QR code if checkout and QR code generation succeed', async () => {
-        const input = createMockInputPayment(randomUUID())
-        const mockPayment = createMockPayment(PAYMENT_ID_1, TODAY)
+        const input = createMockInputPayment(randomUUID(), 22.5)
+        const mockPayment = createMockPayment(PAYMENT_ID_1)
         mockPaymentRepository.checkout.mockResolvedValue(Right(mockPayment))
         mockExternalPaymentRepository.generateQrCodePaymentString.mockResolvedValue(
             Right('qr-code-string')
@@ -75,12 +74,8 @@ describe('CheckoutUseCase', () => {
         expect(result.value).toEqual({
             id: mockPayment.getId(),
             status: mockPayment.getStatus(),
-            total: mockPayment.getOrder().getTotalOrderValue(),
+            total: 22.5,
             orderId: mockPayment.getOrderId(),
-            items: mockPayment
-                .getOrder()
-                .getItems()
-                .map((item) => item.toJSON()),
             qr_code_data: 'qr-code-string',
         })
     })

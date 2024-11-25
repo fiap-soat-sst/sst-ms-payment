@@ -13,7 +13,7 @@ app.listen(port, () => {
 })
 
 app.get('/', (req, res) => {
-    res.redirect('/public/docs')
+    res.redirect('/docs')
 })
 
 app.get('/ping', (req, res) => {

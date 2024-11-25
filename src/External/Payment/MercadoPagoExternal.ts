@@ -1,5 +1,4 @@
 import { Payment } from '../../Entities/Payment'
-import Order from '../../Entities/Order'
 import { Either, Left, Right } from '../../@Shared/Either'
 import IExternalPaymentGatewayRepository from '../../Gateways/contracts/IExternalPaymentGatewayRepository'
 import { HttpRequest } from '../../@Shared/Request'
@@ -7,10 +6,11 @@ import { AxiosHeaders, AxiosResponse } from 'axios'
 
 export class MercadoPagoExternal implements IExternalPaymentGatewayRepository {
     async generateQrCodePaymentString(
-        payment: Payment
+        payment: Payment,
+        total: number
     ): Promise<Either<Error, String>> {
         try {
-            const payload = this.qrCodePayload(payment)
+            const payload = this.qrCodePayload(payment, total)
             const token = process.env.ACCESS_TOKEN_MERCADO_PAGO || ''
             const mercadoPagoUrl = process.env.MERCADO_PAGO_URL || ''
             const mercadoPagoUserId = process.env.MERCADO_PAGO_USER_ID || ''
@@ -54,12 +54,7 @@ export class MercadoPagoExternal implements IExternalPaymentGatewayRepository {
         }
     }
 
-    private qrCodePayload(payment: Payment): Object {
-        let total = 0
-        const order = payment.getOrder()
-        if (order instanceof Order) {
-            total = order.getTotalOrderValue()
-        }
+    private qrCodePayload(payment: Payment, total: number): Object {
         if (total === 0) {
             throw new Error('Payment amount cannot be 0.')
         }

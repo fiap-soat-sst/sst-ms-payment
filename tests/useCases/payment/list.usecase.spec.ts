@@ -8,18 +8,16 @@ import { createExpectedPayment } from './utils'
 
 const PAYMENT_ID_1 = randomUUID()
 const PAYMENT_ID_2 = randomUUID()
-const TODAY = new Date()
 
 const rawExpectedPayments = [
-    createExpectedPayment(PAYMENT_ID_1, TODAY),
-    createExpectedPayment(PAYMENT_ID_2, TODAY),
+    createExpectedPayment(PAYMENT_ID_1),
+    createExpectedPayment(PAYMENT_ID_2),
 ]
 
 const expectedPayments = rawExpectedPayments.map((result) => {
     return {
         id: result.getId(),
         status: result.getStatus(),
-        order: result.getOrder(),
     }
 })
 
@@ -34,8 +32,8 @@ describe('ListUseCase', () => {
 
     it('should return a list of payments successfully', async () => {
         const mockPayments = [
-            createMockPayment(PAYMENT_ID_1, TODAY),
-            createMockPayment(PAYMENT_ID_2, TODAY),
+            createMockPayment(PAYMENT_ID_1),
+            createMockPayment(PAYMENT_ID_2),
         ]
         mockPaymentRepository.list.mockResolvedValue(Right(mockPayments))
         const result = await listUseCase.execute()

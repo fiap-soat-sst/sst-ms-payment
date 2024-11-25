@@ -3,7 +3,8 @@ import { Payment } from '../../../Entities/Payment'
 
 export default interface IExternalPaymentRepository {
     generateQrCodePaymentString(
-        payment: Payment
+        payment: Payment,
+        total: number
     ): Promise<Either<Error, String>>
     getPaymentStatusById(
         externalPaymentId: String
