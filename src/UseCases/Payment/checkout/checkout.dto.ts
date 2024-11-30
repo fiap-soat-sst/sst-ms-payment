@@ -1,5 +1,3 @@
-import OrderItem from '../../../Entities/OrderItem'
-
 export interface InputCheckoutDTO {
     orderId: string
     total: number
