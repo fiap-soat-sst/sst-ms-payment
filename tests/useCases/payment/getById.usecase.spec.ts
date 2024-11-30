@@ -8,7 +8,6 @@ import { createMockPayment } from '../../mocks/payment.mock'
 import { PaymentStatus } from '../../../src/Entities/Enums/PaymentStatusEnum'
 
 const PAYMENT_ID_1 = randomUUID()
-const TODAY = new Date()
 
 describe('GetByIdUseCase', () => {
     let getByIdUseCase: GetByIdUseCase
@@ -21,7 +20,7 @@ describe('GetByIdUseCase', () => {
 
     it('should return payment details when payment is found', async () => {
         const input: InputGetByIdDTO = { id: PAYMENT_ID_1 }
-        const mockPayment = createMockPayment(PAYMENT_ID_1, TODAY)
+        const mockPayment = createMockPayment(PAYMENT_ID_1)
         mockPaymentRepository.getById.mockResolvedValue(Right(mockPayment))
 
         const result = await getByIdUseCase.execute(input)
