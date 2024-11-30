@@ -34,20 +34,22 @@ export default class UpdateStatusUseCase {
             status
         )
 
-        if (isRight(savedPayment)) {
+        if (isRight(savedPayment) && status !== PaymentStatus.DECLINED) {
             await this.externalOrderRepository.updateOrderStatus(
                 savedPayment.value.getOrderId(),
-                paymentStatus.value
+                status
             )
 
             return Right<string>(
                 `Atualização feita com sucesso.\nOrder Id: ${savedPayment.value.getOrderId()}\nPayment Id: ${
                     input.id
-                }\nStatus: ${paymentStatus.value}`
+                }\nStatus: ${status}`
             )
         } else {
             return Left(
-                Error('Algo deu errado ao atualizar o status do pedido.')
+                Error(
+                    `Algo deu errado ao atualizar o status do pedido.\nPayment Id: ${input.id}\nStatus: ${status}`
+                )
             )
         }
     }

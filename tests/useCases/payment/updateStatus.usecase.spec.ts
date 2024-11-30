@@ -6,19 +6,27 @@ import UpdateStatusUseCase from '../../../src/UseCases/Payment/updateStatus/upta
 import IExternalPaymentGatewayRepository from '../../../src/Gateways/contracts/IExternalPaymentGatewayRepository'
 import { InputUpdateStatusDTO } from '../../../src/UseCases/Payment/updateStatus/updateStatus.dto'
 import { randomUUID } from 'crypto'
+import IExternalOrderGatewayRepository from '../../../src/Gateways/contracts/IExternalOrderGatewayRepository'
+import { createMockPayment } from '../../mocks/payment.mock'
+
+const PAYMENT_ID_1 = randomUUID()
 
 describe('UpdateStatusUseCase', () => {
     let usecase: UpdateStatusUseCase
     let mockPaymentRepository: jest.Mocked<IPaymentGatewayRepository>
     let mockExternalPaymentRepository: jest.Mocked<IExternalPaymentGatewayRepository>
+    let mockExternalOrderRepository: jest.Mocked<IExternalOrderGatewayRepository>
 
     beforeEach(() => {
         mockPaymentRepository = createMock<IPaymentGatewayRepository>()
         mockExternalPaymentRepository =
             createMock<IExternalPaymentGatewayRepository>()
+        mockExternalOrderRepository =
+            createMock<IExternalOrderGatewayRepository>()
         usecase = new UpdateStatusUseCase(
             mockPaymentRepository,
-            mockExternalPaymentRepository
+            mockExternalPaymentRepository,
+            mockExternalOrderRepository
         )
     })
 
@@ -41,20 +49,21 @@ describe('UpdateStatusUseCase', () => {
 
     it('should update status to APPROVED if external payment status is approved', async () => {
         const input: InputUpdateStatusDTO = {
-            id: randomUUID(),
+            id: PAYMENT_ID_1,
             externalPaymentId: randomUUID(),
         }
+        const mockPayment = createMockPayment(PAYMENT_ID_1)
         mockExternalPaymentRepository.getPaymentStatusById.mockResolvedValue(
             Right('approved')
         )
-        mockPaymentRepository.updateStatus.mockResolvedValue(
-            Right('Status updated successfully')
-        )
+        mockPaymentRepository.updateStatus.mockResolvedValue(Right(mockPayment))
 
         const result = await usecase.execute(input)
 
         expect(isRight(result)).toBeTruthy()
-        expect(result.value).toEqual('Status updated successfully')
+        expect(result.value).toEqual(
+            `Atualização feita com sucesso.\nOrder Id: order-id\nPayment Id: ${PAYMENT_ID_1}\nStatus: ${PaymentStatus.APPROVED}`
+        )
         expect(mockPaymentRepository.updateStatus).toHaveBeenCalledWith(
             input.id,
             PaymentStatus.APPROVED
@@ -63,20 +72,23 @@ describe('UpdateStatusUseCase', () => {
 
     it('should update status to DECLINED if external payment status is not approved', async () => {
         const input: InputUpdateStatusDTO = {
-            id: randomUUID(),
+            id: PAYMENT_ID_1,
             externalPaymentId: randomUUID(),
         }
+        const mockPayment = createMockPayment(PAYMENT_ID_1)
         mockExternalPaymentRepository.getPaymentStatusById.mockResolvedValue(
             Right('declined')
         )
-        mockPaymentRepository.updateStatus.mockResolvedValue(
-            Right('Status updated successfully')
-        )
+        mockPaymentRepository.updateStatus.mockResolvedValue(Right(mockPayment))
 
         const result = await usecase.execute(input)
 
-        expect(isRight(result)).toBeTruthy()
-        expect(result.value).toEqual('Status updated successfully')
+        expect(isLeft(result)).toBeTruthy()
+        expect(result.value).toEqual(
+            Error(
+                `Algo deu errado ao atualizar o status do pedido.\nPayment Id: ${PAYMENT_ID_1}\nStatus: ${PaymentStatus.DECLINED}`
+            )
+        )
         expect(mockPaymentRepository.updateStatus).toHaveBeenCalledWith(
             input.id,
             PaymentStatus.DECLINED
