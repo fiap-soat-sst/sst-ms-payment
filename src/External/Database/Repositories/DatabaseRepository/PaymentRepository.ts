@@ -93,7 +93,7 @@ export default class PaymentRepository implements IPaymentRepository {
     async updateStatus(
         id: string,
         status: string
-    ): Promise<Either<Error, string>> {
+    ): Promise<Either<Error, Payment>> {
         try {
             const paymentFind = await this.repository.findOne({
                 where: { id: new ObjectId(id) },
@@ -107,7 +107,13 @@ export default class PaymentRepository implements IPaymentRepository {
 
             await this.repository.save(paymentFind)
 
-            return Right(`Status de pagamento atualizado para: ${status}`)
+            const payment = new Payment(
+                paymentFind.id.toString(),
+                paymentFind.orderId,
+                paymentFind.status
+            )
+
+            return Right<Payment>(payment)
         } catch (error) {
             console.error(error)
             return Left<Error>(error as Error)

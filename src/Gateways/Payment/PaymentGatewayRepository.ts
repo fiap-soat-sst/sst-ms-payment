@@ -23,7 +23,7 @@ export default class PaymentGatewayRepository
     async updateStatus(
         id: string,
         status: string
-    ): Promise<Either<Error, string>> {
+    ): Promise<Either<Error, Payment>> {
         return this.repository.updateStatus(id, status)
     }
 }
