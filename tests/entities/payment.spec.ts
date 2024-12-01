@@ -46,7 +46,7 @@ describe('Payment entity', () => {
     })
 
     it('get payment url', () => {
-        expect(payment.getPaymentUrl()).toBe('http://localhost:3000/payments/1')
+        expect(payment.getPaymentUrl()).toBe('http://localhost:4000/payments/1')
     })
 
     it('get notification url', () => {
