@@ -1,26 +1,11 @@
-import 'reflect-metadata'
-import { DataSource } from 'typeorm'
-import { Payment } from './Models/Payment'
+// src > External > Database > DatabaseAdapter.ts
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 
-export const AppDataSource = new DataSource({
-    type: 'mongodb',
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 27017,
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    logging: false,
-    entities: [Payment],
-    synchronize: true,
-    useUnifiedTopology: true,
+const client = new DynamoDBClient({
+    region: process.env.AWS_REGION,    
 })
 
-AppDataSource.initialize()
-    .then(() => {
-        console.log(
-            '[MongoDb]: Connection has been established successfully 🚀'
-        )
-    })
-    .catch((error) => {
-        throw error
-    })
+export const DynamoDB = DynamoDBDocumentClient.from(client)
+
+console.log('[DynamoDB]: Connection has been established successfully 🚀')

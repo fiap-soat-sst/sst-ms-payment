@@ -1,14 +1,11 @@
-import { Entity, Column, ObjectIdColumn } from 'typeorm'
-import { ObjectId } from 'mongodb'
-
-@Entity()
 export class Payment {
-    @ObjectIdColumn()
-    id!: ObjectId
+  id: string
+  orderId: string
+  status: string
 
-    @Column()
-    orderId: string
-
-    @Column({ length: 255 })
-    status: string
+  constructor(id: string, orderId: string, status: string) {
+      this.id = id
+      this.orderId = orderId
+      this.status = status
+  }
 }

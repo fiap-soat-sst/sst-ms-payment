@@ -1,33 +1,18 @@
-import { Repository } from 'typeorm'
-import { Either, Left, Right, isLeft } from '../../../../@Shared/Either'
-import { Payment as model } from '../../Models/Payment'
-import { AppDataSource } from '../../DatabaseAdapter'
+import { DynamoDB } from '../../DatabaseAdapter'
 import IPaymentRepository from '../Contracts/IPaymentRepository'
+import { Either, Left, Right } from '../../../../@Shared/Either'
 import { Payment } from '../../../../Entities/Payment'
-import { ObjectId } from 'mongodb'
+import { PutCommand, GetCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
+
+const TABLE_NAME = 'Payments'
 
 export default class PaymentRepository implements IPaymentRepository {
-    private repository: Repository<model>
-
-    constructor() {
-        this.repository = AppDataSource.getRepository(model)
-    }
-
     async list(): Promise<Either<Error, Payment[]>> {
         try {
-            const paymentsFind = await this.repository.find()
-
-            if (paymentsFind.length === 0) {
-                return Right<Payment[]>([])
-            }
-
-            const payments = paymentsFind.map((payment) => {
-                return new Payment(
-                    payment.id.toString(),
-                    payment.orderId,
-                    payment.status
-                )
-            })
+            const result = await DynamoDB.send(new ScanCommand({ TableName: TABLE_NAME }))
+            const payments = result.Items?.map(
+                (item) => new Payment(item.id, item.orderId, item.status)
+            ) || []
             return Right<Payment[]>(payments)
         } catch (error) {
             console.error(error)
@@ -37,31 +22,24 @@ export default class PaymentRepository implements IPaymentRepository {
 
     async checkout(payment: Payment): Promise<Either<Error, Payment>> {
         try {
-            const orderFind = await this.repository.findOne({
-                where: {
-                    orderId: payment.getOrderId(),
-                },
-            })
-
-            if (orderFind) {
+            const existing = await DynamoDB.send(
+                new GetCommand({ TableName: TABLE_NAME, Key: { id: payment.getOrderId() } })
+            )
+            if (existing.Item) {
                 return Left<Error>(new Error('Order is already paid'))
             }
 
-            const paymentJSON = payment.toJSON()
-
-            const paymentModel = new model()
-            paymentModel.orderId = paymentJSON.orderId
-            paymentModel.status = paymentJSON.status
-
-            const paymentSave = await this.repository.save(paymentModel)
-
-            const paymentSent = new Payment(
-                paymentSave.id.toString(),
-                paymentSave.orderId,
-                paymentSave.status
+            await DynamoDB.send(
+                new PutCommand({
+                    TableName: TABLE_NAME,
+                    Item: {
+                        id: payment.getId(),
+                        orderId: payment.getOrderId(),
+                        status: payment.getStatus(),
+                    },
+                })
             )
-
-            return Right<Payment>(paymentSent)
+            return Right<Payment>(payment)
         } catch (error) {
             console.error(error)
             return Left<Error>(error as Error)
@@ -70,50 +48,32 @@ export default class PaymentRepository implements IPaymentRepository {
 
     async getById(id: string): Promise<Either<Error, Payment>> {
         try {
-            const paymentFind = await this.repository.findOne({
-                where: { id: new ObjectId(id) },
-            })
-
-            if (!paymentFind) {
+            const result = await DynamoDB.send(
+                new GetCommand({ TableName: TABLE_NAME, Key: { id } })
+            )
+            if (!result.Item) {
                 return Left<Error>(new Error('Payment not found'))
             }
-
-            const payment = new Payment(
-                paymentFind.id.toString(),
-                paymentFind.orderId,
-                paymentFind.status
-            )
-
+            const payment = new Payment(result.Item.id, result.Item.orderId, result.Item.status)
             return Right<Payment>(payment)
         } catch (error) {
+            console.error(error)
             return Left<Error>(error as Error)
         }
     }
 
-    async updateStatus(
-        id: string,
-        status: string
-    ): Promise<Either<Error, Payment>> {
+    async updateStatus(id: string, status: string): Promise<Either<Error, Payment>> {
         try {
-            const paymentFind = await this.repository.findOne({
-                where: { id: new ObjectId(id) },
-            })
-
-            if (!paymentFind) {
-                return Left<Error>(new Error('Payment not found'))
-            }
-
-            paymentFind.status = status
-
-            await this.repository.save(paymentFind)
-
-            const payment = new Payment(
-                paymentFind.id.toString(),
-                paymentFind.orderId,
-                paymentFind.status
+            await DynamoDB.send(
+                new UpdateCommand({
+                    TableName: TABLE_NAME,
+                    Key: { id },
+                    UpdateExpression: 'set #status = :status',
+                    ExpressionAttributeNames: { '#status': 'status' },
+                    ExpressionAttributeValues: { ':status': status },
+                })
             )
-
-            return Right<Payment>(payment)
+            return this.getById(id)
         } catch (error) {
             console.error(error)
             return Left<Error>(error as Error)
