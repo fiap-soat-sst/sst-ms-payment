@@ -70,7 +70,7 @@ jobs:
       
       - name: Update deployment main image
         run: |
-          kubectl set image deployment/${{env.DEPLOYMENT_NAME}} --namespace=${{env.K8S_NAMESPACE}} migrate=${{env.IMAGE_NAME}}:${{ github.event.release.tag_name }} ${{env.DEPLOYMENT_NAME}}=${{env.IMAGE_NAME}}:${{ github.event.release.tag_name }}
+          kubectl set image deployment/${{env.DEPLOYMENT_NAME}} --namespace=${{env.K8S_NAMESPACE}} ${{env.DEPLOYMENT_NAME}}=${{env.IMAGE_NAME}}:${{ github.event.release.tag_name }}
 
       - name: restart deployment
         run: |
