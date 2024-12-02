@@ -5,10 +5,12 @@ on:
     types: [published]
   
 env:
-  IMAGE_NAME: evilfeeh/self-service-totem
+  IMAGE_NAME: evilfeeh/sst-ms-payment
   EKS_CLUSTER_NAME: self-service-totem
   AWS_REGION: us-east-1
   REGISTRY: hub.docker.com
+  K8S_NAMESPACE: fiap-soat
+  DEPLOYMENT_NAME: payment-api
 
 jobs:
   push_to_registry:  
@@ -68,8 +70,8 @@ jobs:
       
       - name: Update deployment main image
         run: |
-          kubectl set image deployment/sst-api --namespace=fiap-soat migrate=evilfeeh/self-service-totem:${{ github.event.release.tag_name }} sst-api=evilfeeh/self-service-totem:${{ github.event.release.tag_name }}
+          kubectl set image deployment/${{env.DEPLOYMENT_NAME}} --namespace=${{env.K8S_NAMESPACE}} migrate=${{env.IMAGE_NAME}}:${{ github.event.release.tag_name }} ${{env.DEPLOYMENT_NAME}}=${{env.IMAGE_NAME}}:${{ github.event.release.tag_name }}
 
       - name: restart deployment
         run: |
-          kubectl rollout restart deployment sst-api --namespace=fiap-soat
+          kubectl rollout restart deployment ${{env.DEPLOYMENT_NAME}} --namespace=${{env.K8S_NAMESPACE}}
