@@ -3,7 +3,7 @@
 <img alt="Node Version" src="https://img.shields.io/badge/Node_Version-20.18-green"> [![Setup and build](https://github.com/fiap-soat-sst/sst-ms-payment/actions/workflows/setup-build-pipeline.yml/badge.svg)](https://github.com/fiap-soat-sst/sst-ms-payment/actions/workflows/setup-build-pipeline.yml) ![coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/evilfeeh/b08eb2c7df611955dd487f17d2a4c340/raw/coverage-sst-ms-payment.json)
 
 This application is part of the Tech Challenge project from FIAP.
-This is a microsservice backend Developed with TypeScript, Docker, DDD and clean architecture focused to deliver functionalities to the cooking area manager theirs orders.
+This is a microsservice backend Developed with TypeScript, Docker, DDD and clean architecture focused to deliver functionalities to the payment process.
 
 ## ABOUT
 
