@@ -21,6 +21,7 @@ export const authMiddleware = (verifyAuthToken: VerifyAuthToken) => {
                 message: 'You dont have auth rights for this route.',
             })
         } catch (err) {
+            console.log('🚀 ~ return ~ token:', token)
             console.log('🚀 ~ return ~ err:', err)
             res.status(401).json({ message: 'Token is not valid' })
         }
