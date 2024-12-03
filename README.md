@@ -39,3 +39,7 @@ The apps runs into port 3125, it's possible to change the value port or other en
 To access the docs, access:
 `http://localhost:3000/public/docs`
 
+# Coverage - taken from the last pull request
+![image](https://github.com/user-attachments/assets/2281e1d4-c038-4c90-8cda-da312b70eacd)
+
+
