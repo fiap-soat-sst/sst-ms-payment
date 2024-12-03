@@ -30,6 +30,7 @@ export default class VerifyAuthToken {
             )
             return authToken
         } catch (error) {
+            console.log('🚀 ~ VerifyAuthToken ~ execute ~ token:', token)
             console.log('🚀 ~ VerifyAuthToken ~ execute ~ error:', error)
             if (error instanceof jwt.TokenExpiredError) {
                 throw new Error('Token is expired')
