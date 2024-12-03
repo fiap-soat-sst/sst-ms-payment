@@ -4,7 +4,7 @@ import { Either, Left, Right } from '../../../../@Shared/Either'
 import { Payment } from '../../../../Entities/Payment'
 import { PutCommand, GetCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
-const TABLE_NAME = 'Payments'
+const TABLE_NAME = 'payment-table'
 
 export default class PaymentRepository implements IPaymentRepository {
     async list(): Promise<Either<Error, Payment[]>> {
@@ -23,7 +23,7 @@ export default class PaymentRepository implements IPaymentRepository {
     async checkout(payment: Payment): Promise<Either<Error, Payment>> {
         try {
             const existing = await DynamoDB.send(
-                new GetCommand({ TableName: TABLE_NAME, Key: { id: payment.getOrderId() } })
+                new GetCommand({ TableName: TABLE_NAME, Key: { orderId: payment.getOrderId() } })
             )
             if (existing.Item) {
                 return Left<Error>(new Error('Order is already paid'))
@@ -46,10 +46,10 @@ export default class PaymentRepository implements IPaymentRepository {
         }
     }
 
-    async getById(id: string): Promise<Either<Error, Payment>> {
+    async getById(orderId: string): Promise<Either<Error, Payment>> {
         try {
             const result = await DynamoDB.send(
-                new GetCommand({ TableName: TABLE_NAME, Key: { id } })
+                new GetCommand({ TableName: TABLE_NAME, Key: { orderId } })
             )
             if (!result.Item) {
                 return Left<Error>(new Error('Payment not found'))
@@ -62,18 +62,18 @@ export default class PaymentRepository implements IPaymentRepository {
         }
     }
 
-    async updateStatus(id: string, status: string): Promise<Either<Error, Payment>> {
+    async updateStatus(orderId: string, status: string): Promise<Either<Error, Payment>> {
         try {
             await DynamoDB.send(
                 new UpdateCommand({
                     TableName: TABLE_NAME,
-                    Key: { id },
+                    Key: { orderId },
                     UpdateExpression: 'set #status = :status',
                     ExpressionAttributeNames: { '#status': 'status' },
                     ExpressionAttributeValues: { ':status': status },
                 })
             )
-            return this.getById(id)
+            return this.getById(orderId)
         } catch (error) {
             console.error(error)
             return Left<Error>(error as Error)
