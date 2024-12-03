@@ -4,6 +4,8 @@ import swaggerDocument from '../../../swagger.json'
 import PaymentRoutes from './Routes/PaymentRoutes'
 import VerifyAuthToken from '../../UseCases/Payment/Auth/verifyAuthToken.usecase'
 import { authMiddleware } from './Auth/AuthMiddleware'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const app: Express = express()
 app.use(express.json())
